@@ -16,8 +16,13 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -53,12 +58,16 @@ public class PushBox extends JPanel implements ActionListener {
 	
 	//game-related variables
 	private int movCount;				//number of moves already conducted
+	private int tilesPerRow;
+	private int tilesPerCol;
 	private int size;					//how big each tile is in pixels
 	private Tile[][] tiles;				//the tiles array
 	private int playerX; //x-coordinate of player
 	private int playerY; //y-coordinate of player
 //	private int stage;
 	private int genSkip;
+	int pshbxDstX = 5;
+	int pshbxDstY = 0;
 	
 	//system-related variables
 	private Timer timer;
@@ -69,6 +78,7 @@ public class PushBox extends JPanel implements ActionListener {
         setBackground(Color.LIGHT_GRAY);
 		addMouseListener(new MAdapter());
 		addMouseMotionListener(new MAdapter());
+		addKeyListener(new KeyInput());
 		setFocusable(true);
 		setDoubleBuffered(true);
 		//initialize the colors using rgb
@@ -86,18 +96,16 @@ public class PushBox extends JPanel implements ActionListener {
 		initBtns();
 		initTxt();
 		initLabels();
+		initGameVars();
 		pic = new BufferedImage(xDim, yDim, BufferedImage.TYPE_INT_RGB);
 		picLabel = new JLabel(new ImageIcon(pic));
 		addThingsToPanel();
 		//a lot of initialization
-		movCount = 0;
 		genSkip = 1;
-		playerX = 3;
-		playerY = 1;
 		vMax = yDim;
 		hMax = xDim;
 		size = Integer.parseInt(sizeTxt.getText());
-		isRunning = false;
+		isRunning = true;
 		tiles = new Tile[vMax / size][hMax / size];		//initialize the tiles
 		resetSim();										//initialize the simulation
 		updateGraphics(pic.getGraphics());					//draw the initial set up
@@ -105,6 +113,12 @@ public class PushBox extends JPanel implements ActionListener {
 		timer.start();									//start up the sim
     }
 
+    public void initGameVars(){ //initializes game-related variables
+    	movCount = 0;
+		playerX = 0;
+		playerY = 0;
+    }
+    
     public void addThingsToPanel() {
 		GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.FIRST_LINE_START;
@@ -213,6 +227,7 @@ public class PushBox extends JPanel implements ActionListener {
         super();
         setBackground(Color.WHITE);
 		addMouseListener(new MAdapter());
+		addKeyListener(new KeyInput());
 		setFocusable(true);
 		setDoubleBuffered(true);
 	}
@@ -222,22 +237,111 @@ public class PushBox extends JPanel implements ActionListener {
     }
     
     
-    public void playerMove(char c, boolean isPulling) {
+    //moves the player and all boxes
+    public void playerMove(char c) { //ditch isPulling for rn
+    	boolean isPulling = false;
     	switch(c) {
     	case 'r':
-    	//	tryMovRight(isPulling);
+    		System.out.println("attempted right movement, player @ (" + playerX + "," + playerY + ").");
+    		tryMovRight(isPulling);
+    		break;
+    	case 'l':
+    		tryMovLeft(isPulling);
+    		break;
+    	case 'u':
+    		tryMovUp(isPulling);
+    		break;
+    	case 'd':
+    		tryMovDown(isPulling);
     		break;
     	}
     }
 
-	/*
-	 * public void tryMovRight(boolean isPulling) { //move oneself first if
-	 * (tiles[playerX+1, playerY].isInactive() == false) { //space available //need
-	 * to think about the order of to } if (isPulling == true) { if () }
-	 * 
-	 * }
-	 */
+	
+	  public void tryMovRight(boolean isPulling) { //move oneself first
+		  int targX = playerX+1;
+		  int targY = playerY;
+		  if (targX >= tiles.length || targY > tiles[targX].length) {
+			  System.out.println("hit the walls");
+			  return;
+			  }
+		  if (tiles[targX][targY].isInactive() == false) { //space available
+			  System.out.println("tile available @ (" + targX + "," + targY + ").");
+			  if (tiles[targX][targY].getPushBox() == true) {
+				  System.out.println("try pushing a box @ " + targX + "," + targY);
+				  if ((targX+1) < tiles.length && tiles[(targX+1)][targY].isInactive() == false) {
+					  //move box to right
+					  tiles[(targX+1)][targY].setPushBox(true);
+					  tiles[targX][targY].setPushBox(false);
+					  System.out.println("Box moved to " + (targX+1) + ", " + targY);
+					  tiles[playerX][playerY].setPlayer(false);
+					  playerX++;
+					  tiles[targX][targY].setPlayer(true);
+					  System.out.println("Player moved to " + targX + ", " + targY);
+				  }
+				  else { System.out.println("Box hit wall, cannot move box to " + (targX+1) + ", " + targY);
+				  System.out.println("Player blocked by box, cannot move to " + targX + ", " + targY);}
+			  }
+			  else {
+				  tiles[playerX][playerY].setPlayer(false);
+				  playerX++;
+				  tiles[targX][targY].setPlayer(true);
+				  System.out.println("Player moved to " + targX + ", " + targY);
+			  }
+		  }
+		  checkWin();
+	  }
+	 
+	  public void tryMovLeft(boolean isPulling) { //move oneself first
+		  int targX = playerX-1;
+		  int targY = playerY;
+		  if (targX < 0 || targY > tiles[targX].length) {return;}
+		  if (tiles[targX][targY].isInactive() == false) { //space available 
+			  if (tiles[targX][targY].getPushBox() == true) {
+				  if (targX-1 < 0 && tiles[targX+1][targY].isInactive() == false) {
+					  //move box to right
+					  tiles[targX+1][targY].setPushBox(true);
+					  tiles[targX][targY].setPushBox(false);
+					  tiles[targX][targY].setPlayer(true);
+				  }
+			  }
+		  }
+		  checkWin();
+	  }
+	  
+	  public void tryMovUp(boolean isPulling) { //move oneself first
+		  int targX = playerX+1;
+		  int targY = playerY;
+		  if (targX >= tiles.length || targY > tiles[targX].length) {return;}
+		  if (tiles[targX][targY].isInactive() == false) { //space available 
+			  if (tiles[targX][targY].getPushBox() == true) {
+				  if (targX+1 < tiles.length && tiles[targX+1][targY].isInactive() == false) {
+					  //move box to right
+					  tiles[targX+1][targY].setPushBox(true);
+					  tiles[targX][targY].setPushBox(false);
+					  tiles[targX][targY].setPlayer(true);
+				  }
+			  }
+		  }
+		  checkWin();
+	  }
     
+	  public void tryMovDown(boolean isPulling) { //move oneself first
+		  int targX = playerX+1;
+		  int targY = playerY;
+		  if (targX > tiles.length || targY > tiles[targX].length) {return;}
+		  if (tiles[targX][targY].isInactive() == false) { //space available 
+			  if (tiles[targX][targY].getPushBox() == true) {
+				  if (targX+1 < tiles.length && tiles[targX+1][targY].isInactive() == false) {
+					  //move box to right
+					  tiles[targX+1][targY].setPushBox(true);
+					  tiles[targX][targY].setPushBox(false);
+					  tiles[targX][targY].setPlayer(true);
+				  }
+			  }
+		  }
+		  checkWin();
+	  }
     
     public void updateGraphics(Graphics g) {
     	for (int i = 0; i < tiles.length; i++) {
@@ -249,21 +353,28 @@ public class PushBox extends JPanel implements ActionListener {
     	}
     }
 
-    //pending your density parameter, randomly make a tile you know should come alive to be one of the available colors to use
+    //initializes the stage
     public void resetSim() {
     	tiles = new Tile[hMax / size][vMax / size]; //dump the old tiles array
     	int pushboxX = 1; //x coordinate of push box
-    	int pushboxY = 1; //y coordinate of push box
-    	
+    	int pushboxY = 0; //y coordinate of push box
+
+		  System.out.println("starts new game");
     	//your double for loop goes here
     	for (int i = 0; i < tiles.length; i++) {//randomly assigns a tile's initial state of being either alive or dead
 			for (int j = 0; j < tiles[i].length; j++) {
+				if (i == pshbxDstX && j == pshbxDstY) {
+					tiles[i][j] = new Tile(i, j, true, false, false);
+				}
+			else {
 				tiles[i][j] = new Tile(i, j, false, false, false);//tiles are by default active and empty first
+			}
 			}
 		}
 		//TODO: "put" obstacles
 		//TODO: put boxes
 		//TODO: put player
+    	tiles[pushboxX][pushboxY].setPushBox(true);
     	tiles[playerX][playerY].setPlayer(true);
     	updateGraphics(pic.getGraphics());
     	
@@ -272,7 +383,9 @@ public class PushBox extends JPanel implements ActionListener {
 		movCount = 0;
     }
     
-
+    public boolean checkWin() {
+    	return tiles[pshbxDstX][pshbxDstY].getPushBox();
+    }
     
     public void updateLabels() { //keep labels updated with the latest statistics!
     	moves.setText("Moves: " + movCount);
@@ -296,6 +409,48 @@ public class PushBox extends JPanel implements ActionListener {
 		repaint();
 	}
 	
+	
+	class KeyInput extends KeyAdapter{
+		
+		public void keyPressed(KeyEvent e){
+			
+			int key = e.getKeyCode();
+			char dir;
+
+		//different cases for each possibility : up down left right space 
+			switch(key) {
+			case KeyEvent.VK_LEFT:
+				dir = 'l';
+				
+				playerMove(dir);
+				break;
+			
+			case KeyEvent.VK_RIGHT:
+				dir = 'r';
+				
+				playerMove(dir);
+				break;
+			case KeyEvent.VK_UP:
+				dir = 'u';
+				playerMove(dir);
+				break;
+
+			case KeyEvent.VK_DOWN:
+				dir = 'd';
+				playerMove(dir);
+				break;
+			
+
+			case KeyEvent.VK_R:
+				resetSim(); 
+				break;
+			
+			default:
+				break;
+			}
+		}
+		}
+	
 	//where the mouse handler goes
 	//lots of old stuff from game of life, maybe you'll use them, maybe not
 	private class MAdapter extends MouseAdapter {
@@ -318,26 +473,3 @@ public class PushBox extends JPanel implements ActionListener {
 			mouseCoords[0] = p.x;
 			mouseCoords[1] = p.y;			
 		}
-//		
-//		@Override
-//		public void mouseDragged(MouseEvent e) {
-//			Point p = new Point((e.getX() - hOffset) / size, (e.getY() - vOffset) / size);
-//			mouseCoords[0] = p.x;
-//			mouseCoords[1] = p.y;			
-//			try {
-//				if (mouseDraw) {
-//					tiles[p.x][p.y] = 1; 
-//				} else {
-//					tiles[p.x][p.y] = 0;
-//				}
-//				updateGraphics(pic.getGraphics());
-//			} catch (ArrayIndexOutOfBoundsException e2) {
-//			}
-//		}
-
-//		@Override
-//		public void mouseReleased(MouseEvent e) {
-//		}
-	}
-}
-
