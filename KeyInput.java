@@ -15,7 +15,7 @@ public void keyPressed(KeyEvent e){
 	switch(key) {
 	case KeyEvent.VK_LEFT:
 		dir = 'l';
-		if(is_inactive, isPulling) {
+		if(is_inactive) {
 			return;
 		}
 		Tile.playerMove(dir);
