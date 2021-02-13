@@ -85,11 +85,18 @@ public boolean isPullDest() {
 }
 
 //remove all boxes or player from a given tile
-public void clearTile(){
+public void clearTile() {
   this.has_push = false;
   this.has_pull = false;
   this.has_player = false;
 } 
 
+//Get tile color
+public int getColor() {
+  if (this.is_inactive) {
+    return 1;
+  }
+  return 0;
+}
 
 }
