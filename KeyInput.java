@@ -10,8 +10,6 @@ public void keyPressed(KeyEvent e){
 	char dir;
 
 //different cases for each possibility : up down left right space 
-//switch statement 
-//case 1 : VK_LEFT
 	switch(key) {
 	case KeyEvent.VK_LEFT:
 		dir = 'l';
@@ -48,7 +46,10 @@ public void keyPressed(KeyEvent e){
 	case KeyEvent.VK_R:
 		resetLv(); 
 		break;
-	}
 	
+	default:
+		break;
+	}
+}
 }
 
