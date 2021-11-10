@@ -274,6 +274,7 @@ public class PushBox extends JPanel implements ActionListener {
 					  tiles[(targX+1)][targY].setPushBox(true);
 					  tiles[targX][targY].setPushBox(false);
 					  System.out.println("Box moved to " + (targX+1) + ", " + targY);
+
 					  playerX++;
 					  tiles[targX][targY].setPlayer(true);
 					  System.out.println("Player moved to " + targX + ", " + targY);
