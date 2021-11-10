@@ -274,7 +274,7 @@ public class PushBox extends JPanel implements ActionListener {
 					  tiles[(targX+1)][targY].setPushBox(true);
 					  tiles[targX][targY].setPushBox(false);
 					  System.out.println("Box moved to " + (targX+1) + ", " + targY);
-					  tiles[playerX][playerY].setPlayer(false);
+
 					  playerX++;
 					  tiles[targX][targY].setPlayer(true);
 					  System.out.println("Player moved to " + targX + ", " + targY);
@@ -283,7 +283,6 @@ public class PushBox extends JPanel implements ActionListener {
 				  System.out.println("Player blocked by box, cannot move to " + targX + ", " + targY);}
 			  }
 			  else {
-				  tiles[playerX][playerY].setPlayer(false);
 				  playerX++;
 				  tiles[targX][targY].setPlayer(true);
 				  System.out.println("Player moved to " + targX + ", " + targY);
@@ -473,3 +472,4 @@ public class PushBox extends JPanel implements ActionListener {
 			mouseCoords[0] = p.x;
 			mouseCoords[1] = p.y;			
 		}
+
