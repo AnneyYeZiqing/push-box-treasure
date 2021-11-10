@@ -66,8 +66,6 @@ public class PushBox extends JPanel implements ActionListener {
 	private int playerY; //y-coordinate of player
 //	private int stage;
 	private int genSkip;
-	int pushboxX = 2; //x coordinate of push box
-	int pushboxY = 1; //y coordinate of push box
 	int pshbxDstX = 5;
 	int pshbxDstY = 0;
 	
@@ -244,6 +242,7 @@ public class PushBox extends JPanel implements ActionListener {
     	boolean isPulling = false;
     	switch(c) {
     	case 'r':
+    		System.out.println("attempted right movement, player @ (" + playerX + "," + playerY + ").");
     		tryMovRight(isPulling);
     		break;
     	case 'l':
@@ -263,28 +262,27 @@ public class PushBox extends JPanel implements ActionListener {
 		  int targX = playerX+1;
 		  int targY = playerY;
 		  if (targX >= tiles.length || targY > tiles[targX].length) {
-			  System.out.println("hit an obstacle");
+			  System.out.println("hit the walls");
 			  return;
 			  }
 		  if (tiles[targX][targY].isInactive() == false) { //space available
-			//  System.out.println("tile available @ (" + targX + "," + targY + ").");
+			  System.out.println("tile available @ (" + targX + "," + targY + ").");
 			  if (tiles[targX][targY].getPushBox() == true) {
-				  System.out.println("Found a coin! Try pushing it @ " + targX + "," + targY);
+				  System.out.println("try pushing a box @ " + targX + "," + targY);
 				  if ((targX+1) < tiles.length && tiles[(targX+1)][targY].isInactive() == false) {
 					  //move box to right
 					  tiles[(targX+1)][targY].setPushBox(true);
 					  tiles[targX][targY].setPushBox(false);
-					  System.out.println("Coin moved to " + (targX+1) + ", " + targY);
-					  tiles[playerX][playerY].setPlayer(false);
+					  System.out.println("Box moved to " + (targX+1) + ", " + targY);
+
 					  playerX++;
 					  tiles[targX][targY].setPlayer(true);
-					  System.out.println("You moved to " + targX + ", " + targY);
+					  System.out.println("Player moved to " + targX + ", " + targY);
 				  }
-				  else { System.out.println("Coin hit obstacle, cannot move coin to " + (targX+1) + ", " + targY);
-				  System.out.println("You are blocked by coin, cannot move to " + targX + ", " + targY);}
+				  else { System.out.println("Box hit wall, cannot move box to " + (targX+1) + ", " + targY);
+				  System.out.println("Player blocked by box, cannot move to " + targX + ", " + targY);}
 			  }
 			  else {
-				  tiles[playerX][playerY].setPlayer(false);
 				  playerX++;
 				  tiles[targX][targY].setPlayer(true);
 				  System.out.println("Player moved to " + targX + ", " + targY);
@@ -296,106 +294,53 @@ public class PushBox extends JPanel implements ActionListener {
 	  public void tryMovLeft(boolean isPulling) { //move oneself first
 		  int targX = playerX-1;
 		  int targY = playerY;
-		  if (targX < 0 || targY > tiles[targX].length) {
-			  System.out.println("hit the obstacles");
-			  return;
-			  }
-		  if (tiles[targX][targY].isInactive() == false) { //space available
-			//  System.out.println("tile available @ (" + targX + "," + targY + ").");
+		  if (targX < 0 || targY > tiles[targX].length) {return;}
+		  if (tiles[targX][targY].isInactive() == false) { //space available 
 			  if (tiles[targX][targY].getPushBox() == true) {
-				  System.out.println("Found a coin! Try pushing it @ " + targX + "," + targY);
-				  if ((targX-1) >= 0 && tiles[(targX-1)][targY].isInactive() == false) {
-					  //move box to left
-					  tiles[(targX-1)][targY].setPushBox(true);
+				  if (targX-1 < 0 && tiles[targX+1][targY].isInactive() == false) {
+					  //move box to right
+					  tiles[targX+1][targY].setPushBox(true);
 					  tiles[targX][targY].setPushBox(false);
-					  System.out.println("Coin moved to " + (targX-1) + ", " + targY);
-					  tiles[playerX][playerY].setPlayer(false);
-					  playerX = targX;
 					  tiles[targX][targY].setPlayer(true);
-					  System.out.println("You moved to " + targX + ", " + targY);
 				  }
-				  else { System.out.println("Coin hits obstacle, cannot move coin to " + (targX-1) + ", " + targY);
-				  System.out.println("You are blocked by coin, cannot move to " + targX + ", " + targY);}
-			  }
-			  else {
-				  tiles[playerX][playerY].setPlayer(false);
-				  playerX = targX;
-				  tiles[targX][targY].setPlayer(true);
-				  System.out.println("Player moved to " + targX + ", " + targY);
 			  }
 		  }
 		  checkWin();
 	  }
 	  
 	  public void tryMovUp(boolean isPulling) { //move oneself first
-		  int targX = playerX;
-		  int targY = playerY-1;
-		  if (targY < 0) {
-			  System.out.println("hit the obstacles");
-			  return;
-			  }
-		  if (tiles[targX][targY].isInactive() == false) { //space available
-			  //System.out.println("tile available @ (" + targX + "," + targY + ").");
+		  int targX = playerX+1;
+		  int targY = playerY;
+		  if (targX >= tiles.length || targY > tiles[targX].length) {return;}
+		  if (tiles[targX][targY].isInactive() == false) { //space available 
 			  if (tiles[targX][targY].getPushBox() == true) {
-				  System.out.println("Found a coin! Try pushing it @ " + targX + "," + targY);
-				  if ((targY-1) >= 0 && tiles[(targX)][targY-1].isInactive() == false) {
-					  //move box to left
-					  tiles[(targX)][targY-1].setPushBox(true);
+				  if (targX+1 < tiles.length && tiles[targX+1][targY].isInactive() == false) {
+					  //move box to right
+					  tiles[targX+1][targY].setPushBox(true);
 					  tiles[targX][targY].setPushBox(false);
-					  System.out.println("coin moved to " + targX + ", " + (targY-1));
-					  tiles[playerX][playerY].setPlayer(false);
-					  playerY = targY;
 					  tiles[targX][targY].setPlayer(true);
-					  System.out.println("You moved to " + targX + ", " + targY);
 				  }
-				  else { System.out.println("Coin hit obstacle, cannot move coin to " + targX + ", " + (targY-1));
-				  System.out.println("You are blocked by the coin, cannot move to " + targX + ", " + targY);}
-			  }
-			  else {
-				  tiles[playerX][playerY].setPlayer(false);
-				  playerY = targY;
-				  tiles[targX][targY].setPlayer(true);
-				  System.out.println("You moved to " + targX + ", " + targY);
 			  }
 		  }
 		  checkWin();
 	  }
-	  
-	  public void tryMovDown(boolean isPulling) { //move oneself first
-		  int targX = playerX;
-		  int targY = playerY+1;
-		  if (targY >= tiles[targX].length) {
-			  System.out.println("hit the obstacles");
-			  return;
-			  }
-		  if (tiles[targX][targY].isInactive() == false) { //space available
-			  //System.out.println("tile available @ (" + targX + "," + targY + ").");
-			  if (tiles[targX][targY].getPushBox() == true) {
-				  System.out.println("Found a coin! Try pushing it @ " + targX + "," + targY);
-				  if ((targY+1) < tiles[targX].length && tiles[(targX)][targY-1].isInactive() == false) {
-					  //move box to left
-					  tiles[(targX)][targY+1].setPushBox(true);
-					  tiles[targX][targY].setPushBox(false);
-					  System.out.println("Coin moved to " + targX + ", " + (targY+1));
-					  tiles[playerX][playerY].setPlayer(false);
-					  playerY = targY;
-					  tiles[targX][targY].setPlayer(true);
-					  System.out.println("You moved to " + targX + ", " + targY);
-				  }
-				  else { System.out.println("Coin hits obstacle, cannot move coin to " + targX + ", " + (targY+1));
-				  System.out.println("You are blocked by coin, cannot move to " + targX + ", " + targY);}
-			  }
-			  else {
-				  tiles[playerX][playerY].setPlayer(false);
-				  playerY = targY;
-				  tiles[targX][targY].setPlayer(true);
-				  System.out.println("Player moved to " + targX + ", " + targY);
-			  }
-		  }
-		  checkWin();
-	  }
-	 
     
+	  public void tryMovDown(boolean isPulling) { //move oneself first
+		  int targX = playerX+1;
+		  int targY = playerY;
+		  if (targX > tiles.length || targY > tiles[targX].length) {return;}
+		  if (tiles[targX][targY].isInactive() == false) { //space available 
+			  if (tiles[targX][targY].getPushBox() == true) {
+				  if (targX+1 < tiles.length && tiles[targX+1][targY].isInactive() == false) {
+					  //move box to right
+					  tiles[targX+1][targY].setPushBox(true);
+					  tiles[targX][targY].setPushBox(false);
+					  tiles[targX][targY].setPlayer(true);
+				  }
+			  }
+		  }
+		  checkWin();
+	  }
     
     public void updateGraphics(Graphics g) {
     	for (int i = 0; i < tiles.length; i++) {
@@ -410,12 +355,10 @@ public class PushBox extends JPanel implements ActionListener {
     //initializes the stage
     public void resetSim() {
     	tiles = new Tile[hMax / size][vMax / size]; //dump the old tiles array
+    	int pushboxX = 1; //x coordinate of push box
+    	int pushboxY = 0; //y coordinate of push box
 
-		  System.out.println("You are on an island with some of the world's rarest treasure!");
-		  System.out.println("Push and pull the coins into your treasure box to secure them!");
-		  System.out.println("The treasure is located at (" + pushboxX + "," + pushboxY + ").");
-		  System.out.println("You are at (" + playerX + "," + playerY + ").");
-		  System.out.println("Move the treasure to the box @ (" + pshbxDstX + "," + pshbxDstY + ") to bring it home!");
+		  System.out.println("starts new game");
     	//your double for loop goes here
     	for (int i = 0; i < tiles.length; i++) {//randomly assigns a tile's initial state of being either alive or dead
 			for (int j = 0; j < tiles[i].length; j++) {
@@ -439,10 +382,8 @@ public class PushBox extends JPanel implements ActionListener {
 		movCount = 0;
     }
     
-    public void checkWin() {
-    	if (tiles[pshbxDstX][pshbxDstY].getPushBox() == true) {
-    		System.out.println ("Treasure claimed!!! You win!!!");
-    	}
+    public boolean checkWin() {
+    	return tiles[pshbxDstX][pshbxDstY].getPushBox();
     }
     
     public void updateLabels() { //keep labels updated with the latest statistics!
@@ -531,26 +472,3 @@ public class PushBox extends JPanel implements ActionListener {
 			mouseCoords[0] = p.x;
 			mouseCoords[1] = p.y;			
 		}
-//		
-//		@Override
-//		public void mouseDragged(MouseEvent e) {
-//			Point p = new Point((e.getX() - hOffset) / size, (e.getY() - vOffset) / size);
-//			mouseCoords[0] = p.x;
-//			mouseCoords[1] = p.y;			
-//			try {
-//				if (mouseDraw) {
-//					tiles[p.x][p.y] = 1; 
-//				} else {
-//					tiles[p.x][p.y] = 0;
-//				}
-//				updateGraphics(pic.getGraphics());
-//			} catch (ArrayIndexOutOfBoundsException e2) {
-//			}
-//		}
-
-//		@Override
-//		public void mouseReleased(MouseEvent e) {
-//		}
-	}
-}
-
